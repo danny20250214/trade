@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.SysProductMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.ruoyi.system.domain.SysProduct">
+        <id column="id" property="id"/>
+        <result column="create_time" property="createTime"/>
+        <result column="modify_time" property="modifyTime"/>
+        <result column="version" property="version"/>
+        <result column="deleted" property="deleted"/>
+        <result column="creator_id" property="creatorId"/>
+        <result column="creator_username" property="creatorUsername"/>
+        <result column="modifier_id" property="modifierId"/>
+        <result column="modifier_username" property="modifierUsername"/>
+        <result column="code" property="code"/>
+        <result column="name" property="name"/>
+        <result column="sort" property="sort"/>
+        <result column="context" property="context"/>
+        <result column="remark" property="remark"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, create_time, modify_time, version, deleted, creator_id, creator_username, modifier_id, modifier_username,
+        code, name, sort, context, remark
+    </sql>
+
+    <!-- 根据ID查询 -->
+    <select id="selectById" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from sys_product
+        where id = #{id} and deleted = 0
+    </select>
+
+   <!-- &lt;!&ndash; 插入数据 &ndash;&gt;
+    <insert id="insert" parameterType="com.ruoyi.system.domain.SysProduct" useGeneratedKeys="true" keyProperty="id">
+        insert into sys_product
+        (create_time, modify_time, version, deleted, creator_id, creator_username, modifier_id, modifier_username,
+         code, name, sort, context, remark)
+        values
+            (#{createTime}, #{modifyTime}, #{version}, #{deleted}, #{creatorId}, #{creatorUsername}, #{modifierId},
+             #{modifierUsername}, #{code}, #{name}, #{sort}, #{context}, #{remark})
+    </insert>
+
+    &lt;!&ndash; 更新数据 &ndash;&gt;
+    <update id="updateById" parameterType="com.ruoyi.system.domain.SysProduct">
+        update sys_product
+        <set>
+            <if test="modifyTime != null">modify_time = #{modifyTime},</if>
+            <if test="version != null">version = #{version},</if>
+            <if test="modifierId != null">modifier_id = #{modifierId},</if>
+            <if test="modifierUsername != null">modifier_username = #{modifierUsername},</if>
+            <if test="code != null">code = #{code},</if>
+            <if test="name != null">name = #{name},</if>
+            <if test="sort != null">sort = #{sort},</if>
+            <if test="context != null">context = #{context},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </set>
+        where id = #{id} and deleted = 0
+    </update>
+
+    &lt;!&ndash; 逻辑删除 &ndash;&gt;
+    <update id="deleteById">
+        update sys_product
+        set deleted = 1,
+            modify_time = #{modifyTime},
+            modifier_id = #{modifierId},
+            modifier_username = #{modifierUsername},
+            version = version + 1
+        where id = #{id} and deleted = 0
+    </update>-->
+
+    <!-- 查询列表 -->
+    <select id="selectProductList" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from sys_product
+        where deleted = 0
+        <if test="code != null and code != ''">
+            and code like concat('%', #{code}, '%')
+        </if>
+        <if test="name != null and name != ''">
+            and name like concat('%', #{name}, '%')
+        </if>
+        order by sort asc, create_time desc
+    </select>
+
+</mapper>
