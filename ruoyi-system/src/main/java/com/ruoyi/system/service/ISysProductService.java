@@ -21,7 +21,7 @@ public interface ISysProductService extends IService<SysProduct> {
     
     int updateProduct(SysProduct product);
     
-    int deleteProductByIds(Long[] ids);
+    boolean deleteProductByIds(Long[] ids);
 
     List<SysProduct> selectProductList(SysProduct post);
 }

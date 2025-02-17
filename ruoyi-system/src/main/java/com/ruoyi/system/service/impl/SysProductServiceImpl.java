@@ -1,6 +1,7 @@
 package com.ruoyi.system.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ruoyi.system.domain.SysPost;
 import com.ruoyi.system.domain.SysProduct;
@@ -44,9 +45,11 @@ public class SysProductServiceImpl extends ServiceImpl<SysProductMapper, SysProd
     }
 
     @Override
-    public int deleteProductByIds(Long[] ids) {
-//        return mapper.deleteBatchIds(Arrays.asList(ids));
-        return 0;
+    public boolean deleteProductByIds(Long[] ids) {
+        LambdaUpdateWrapper<SysProduct> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.in(SysProduct::getId, ids)
+                .set(SysProduct::getDeleted, 1);
+        return this.update(updateWrapper);
     }
 
 

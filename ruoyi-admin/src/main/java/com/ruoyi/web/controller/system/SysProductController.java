@@ -1,19 +1,13 @@
 package com.ruoyi.web.controller.system;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.ruoyi.common.annotation.Log;
-import com.ruoyi.common.constant.HttpStatus;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
-import com.ruoyi.common.core.page.PageDomain;
 import com.ruoyi.common.core.page.TableDataInfo;
-import com.ruoyi.common.core.page.TableSupport;
 import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.common.utils.poi.ExcelUtil;
-import com.ruoyi.system.domain.SysPost;
 import com.ruoyi.system.domain.SysProduct;
 import com.ruoyi.system.service.ISysProductService;
-import org.apache.ibatis.type.Alias;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -71,6 +65,8 @@ public class SysProductController  extends BaseController {
     @Log(title = "产品管理", businessType = BusinessType.UPDATE)
     @PutMapping
     public AjaxResult edit(@RequestBody SysProduct product) {
+        String decodedContext = new String(Base64.getDecoder().decode(product.getContext()));
+        product.setContext(decodedContext);
         return toAjax(productService.updateProduct(product));
     }
 

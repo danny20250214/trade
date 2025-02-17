@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.SysCategoryMapper">
+
+    <resultMap id="BaseResultMap" type="com.ruoyi.common.core.domain.entity.SysCategory">
+        <id column="id" property="id"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="name" property="name"/>
+        <result column="sort" property="sort"/>
+        <result column="version" property="version"/>
+        <result column="deleted" property="deleted"/>
+        <result column="creator_id" property="creatorId"/>
+        <result column="creator_username" property="creatorUsername"/>
+        <result column="modifier_id" property="modifierId"/>
+        <result column="modifier_username" property="modifierUsername"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, parent_id, name, sort, version, deleted, creator_id, creator_username, modifier_id, modifier_username
+    </sql>
+
+    <select id="selectCategoryList" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from sys_category
+        where deleted = 0
+        <if test="name != null and name != ''">
+            and name like concat('%', #{name}, '%')
+        </if>
+        <if test="parentId != null">
+            and parent_id = #{parentId}
+        </if>
+        order by sort asc
+    </select>
+
+</mapper> 

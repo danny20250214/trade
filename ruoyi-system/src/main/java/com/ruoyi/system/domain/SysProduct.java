@@ -1,86 +1,41 @@
 package com.ruoyi.system.domain;
 
 
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.ruoyi.common.annotation.Excel;
+import com.ruoyi.common.core.domain.BaseEntityNew;
 import com.ruoyi.common.utils.bean.Query;
 import lombok.Data;
-
-import java.time.LocalDateTime;
 
 /**
  * 产品信息表 (sys_product) 实体类
  */
 @Data
 @TableName("sys_product")
-public class SysProduct {
+public class SysProduct extends BaseEntityNew {
 
     private static final long serialVersionUID = 1L;
 
     @TableField(exist = false)
     private Query query;
 
-
-    @TableId(value = "id", type = IdType.AUTO)
-    private Long id;
-
-    /**
-     * 创建人ID
-     */
-    @TableField(fill = FieldFill.INSERT)
-    private Long creatorId;
-
-    /**
-     * 创建人名称
-     */
-    @TableField(fill = FieldFill.INSERT)
-    private String creatorUsername;
-
-    /**
-     * 创建时间
-     */
-    @TableField(fill = FieldFill.INSERT)
-    private LocalDateTime createTime;
-
-    /**
-     * 修改人ID
-     */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private Long modifierId;
-
-    /**
-     * 修改人名称
-     */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private String modifierUsername;
-
-    /**
-     * 修改时间
-     */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private LocalDateTime modifyTime;
-
-    /**
-     * 版本号
-     */
-    @Version
-    private Integer version;
-
-    /**
-     * 是否删除： true 删除 false 未删除
-     */
-    @TableLogic
-    private Boolean deleted;
-
-
+    @Excel(name = "产品编号")
     private String code;
 
+    @Excel(name = "产品名称")
     private String name;
 
+    @Excel(name = "产品标题")
+    private String title;
+
+    @Excel(name = "产品排序")
     private Integer sort;
 
-//    @JsonDeserialize(using = HtmlDeserializer.class)
+    @Excel(name = "产品内容")
     private String context;
 
+    @Excel(name = "产品备注")
     private String remark;
 
 }

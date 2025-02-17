@@ -3,6 +3,8 @@ package com.ruoyi.framework.config;
 import com.baomidou.mybatisplus.core.config.GlobalConfig;
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import com.baomidou.mybatisplus.core.toolkit.GlobalConfigUtils;
+import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
+import com.baomidou.mybatisplus.extension.plugins.inner.OptimisticLockerInnerInterceptor;
 import com.baomidou.mybatisplus.extension.spring.MybatisSqlSessionFactoryBean;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.framework.interceptor.impl.MyMetaObjectHandler;
@@ -139,7 +141,10 @@ public class MyBatisConfig
 
         // 设置全局配置
         sessionFactory.setGlobalConfig(globalConfig);
-
+        // 配置插件
+        MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
+        interceptor.addInnerInterceptor(new OptimisticLockerInnerInterceptor());
+        sessionFactory.setPlugins(interceptor);
         return sessionFactory.getObject();
     }
 

@@ -18,12 +18,13 @@
         <result column="sort" property="sort"/>
         <result column="context" property="context"/>
         <result column="remark" property="remark"/>
+        <result column="title" property="title"/>
     </resultMap>
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
         id, create_time, modify_time, version, deleted, creator_id, creator_username, modifier_id, modifier_username,
-        code, name, sort, context, remark
+        code, name, sort, context, remark ,title
     </sql>
 
     <!-- 根据ID查询 -->

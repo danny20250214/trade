@@ -116,6 +116,13 @@
     <!-- 添加或修改产品对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body style="height: 1000px">
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
+        <el-row>
+          <el-col :span="24" v-if="form.parentId !== 0">
+            <el-form-item label="归属类别" prop="parentId">
+              <treeselect v-model="form.parentId" :options="categoryOptions" :normalizer="normalizer" placeholder="选择上级类别" />
+            </el-form-item>
+          </el-col>
+        </el-row>
         <el-form-item label="产品名称" required>
             <el-input v-model="form.name" placeholder="请输入产品名称" />
           </el-form-item>
@@ -322,17 +329,18 @@ export default {
               this.open = false;
               this.getList();
             });
+
           } else {
             addProduct(this.form).then(response => {
               this.$modal.msgSuccess("新增成功");
               this.open = false;
               this.getList();
             });
-            try {
-              this.form.context = decodeURIComponent(escape(atob(this.form.context)));
-            } catch (error) {
-              console.error("Base64 解码失败", error);
-            }
+          }
+          try {
+            this.form.context = decodeURIComponent(escape(atob(this.form.context)));
+          } catch (error) {
+            console.error("Base64 解码失败", error);
           }
         }
       });
