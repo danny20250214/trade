@@ -114,17 +114,18 @@
     />
 
     <!-- 添加或修改产品对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body style="height: 1000px">
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-        <el-row>
-          <el-col :span="24" v-if="form.categoryId !== 0">
-            <el-form-item label="上级类别" prop="parentId">
-              <treeselect v-model="form.categoryId" :options="categoryOptions" :normalizer="normalizer" placeholder="选择上级类别" />
-            </el-form-item>
-          </el-col>
-        </el-row>
+    <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body class="product-dialog">
+      <div class="dialog-content">
+        <el-form ref="form" :model="form" :rules="rules" label-width="80px">
+          <el-row>
+            <el-col :span="24" v-if="form.categoryId !== 0">
+              <el-form-item label="上级类别" prop="parentId">
+                <treeselect v-model="form.categoryId" :options="categoryOptions" :normalizer="normalizer" placeholder="选择上级类别" />
+              </el-form-item>
+            </el-col>
+          </el-row>
 
-        <el-form-item label="产品名称" required>
+          <el-form-item label="产品名称" required>
             <el-input v-model="form.name" placeholder="请输入产品名称" />
           </el-form-item>
           <el-form-item label="产品编码" required>
@@ -142,6 +143,7 @@
             ></quill-editor>
           </el-form-item>
         </el-form>
+      </div>
 
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
