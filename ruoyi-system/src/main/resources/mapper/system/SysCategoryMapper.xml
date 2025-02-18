@@ -13,10 +13,14 @@
         <result column="creator_username" property="creatorUsername"/>
         <result column="modifier_id" property="modifierId"/>
         <result column="modifier_username" property="modifierUsername"/>
+        <result column="create_time" property="createTime"/>
+        <result column="modify_time" property="modifyTime"/>
+        <result column="ancestors" property="ancestors"/>
     </resultMap>
 
     <sql id="Base_Column_List">
-        id, parent_id, name, sort, version, deleted, creator_id, creator_username, modifier_id, modifier_username
+        id, parent_id, name, sort, version, deleted, creator_id, creator_username, modifier_id,
+        modifier_username,create_time,modify_time,ancestors
     </sql>
 
     <select id="selectCategoryList" resultMap="BaseResultMap">

@@ -1,5 +1,6 @@
 package com.ruoyi.web.controller.system;
 
+import com.ruoyi.common.annotation.Anonymous;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
@@ -28,6 +29,7 @@ public class SysProductController  extends BaseController {
     private ISysProductService productService;
 
 //    @PreAuthorize("@ss.hasPermi('system:post:list')")
+    @Anonymous
     @GetMapping("/list")
     public TableDataInfo list(SysProduct product)
     {
@@ -37,6 +39,7 @@ public class SysProductController  extends BaseController {
     }
 
 //    @PreAuthorize("@ss.hasPermi('system:product:get')")
+    @Anonymous
     @GetMapping(value = "/{id}")
     public AjaxResult getById(@PathVariable Long id)
     {

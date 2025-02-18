@@ -2,16 +2,15 @@ package com.ruoyi.system.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.ruoyi.system.domain.SysPost;
+import com.ruoyi.common.core.domain.BaseEntityNew;
 import com.ruoyi.system.domain.SysProduct;
 import com.ruoyi.system.mapper.SysProductMapper;
 import com.ruoyi.system.service.ISysProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**

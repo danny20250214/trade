@@ -117,12 +117,13 @@
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body style="height: 1000px">
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-row>
-          <el-col :span="24" v-if="form.parentId !== 0">
-            <el-form-item label="归属类别" prop="parentId">
-              <treeselect v-model="form.parentId" :options="categoryOptions" :normalizer="normalizer" placeholder="选择上级类别" />
+          <el-col :span="24" v-if="form.categoryId !== 0">
+            <el-form-item label="上级类别" prop="parentId">
+              <treeselect v-model="form.categoryId" :options="categoryOptions" :normalizer="normalizer" placeholder="选择上级类别" />
             </el-form-item>
           </el-col>
         </el-row>
+
         <el-form-item label="产品名称" required>
             <el-input v-model="form.name" placeholder="请输入产品名称" />
           </el-form-item>
@@ -158,13 +159,21 @@ import { Message } from "element-ui";
 import axios from "axios";
 import {getToken} from "@/utils/auth";
 import data from "@/views/system/dict/data";
+import {listCategory} from "@/api/system/category";
+import Treeselect from "@riophae/vue-treeselect";
+import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 
 export default {
-  components: { quillEditor },
+  components: { quillEditor,Treeselect},
   name: "Product",
   dicts: ['sys_normal_disable'],
   data() {
     return {
+      // 重新渲染表格状态
+      refreshTable: true,
+      // 是否展开，默认全部展开
+      isExpandAll: true,
+      categoryOptions: [],
       quillInstance : null,
       // 遮罩层
       loading: true,
@@ -193,7 +202,8 @@ export default {
       },
       // 表单参数
       form: {
-        context: ""
+        context: "",
+        categoryId: undefined
       },
       editorOptions: {
         theme: "snow",
@@ -234,6 +244,9 @@ export default {
           },
       // 表单校验
       rules: {
+        categoryId: [
+          { required: true, message: "上级类别不能为空", trigger: "blur" }
+        ],
         name: [
           { required: true, message: "产品名称不能为空", trigger: "blur" }
         ],
@@ -248,8 +261,27 @@ export default {
   },
   created() {
     this.getList();
+    this.getCategoryTree();
   },
   methods: {
+    getCategoryTree() {
+      this.loading = true;
+      listCategory(undefined).then(response => {
+        this.categoryOptions = this.handleTree(response.data, "id");
+        this.loading = false;
+      });
+    },
+    /** 转换类别数据结构 */
+    normalizer(node) {
+      if (node.children && !node.children.length) {
+        delete node.children;
+      }
+      return {
+        id: node.id,
+        label: node.name,
+        children: node.children
+      };
+    },
     /** 查询产品列表 */
     getList() {
       this.loading = true;
@@ -272,7 +304,8 @@ export default {
         name: undefined,
         sort: 0,
         status: "0",
-        remark: undefined
+        remark: undefined,
+        categoryId: undefined
       };
       this.resetForm("form");
     },
@@ -295,17 +328,10 @@ export default {
     /** 新增按钮操作 */
     handleAdd() {
       this.reset();
+      this.getCategoryTree();
+
       this.open = true;
       this.title = "添加产品";
-      this.$nextTick(() => {
-        console.info(this)
-        this.quillInstance = this.$refs.myQuillEditor.quill;
-        if (this.$refs.myQuillEditor) {
-          console.log("Quill 实例:", this.quillInstance);
-        } else {
-          console.error("myQuillEditor 未渲染");
-        }
-      });
     },
     /** 修改按钮操作 */
     handleUpdate(row) {

@@ -9,6 +9,7 @@ import com.ruoyi.common.core.domain.entity.SysCategory;
 import com.ruoyi.common.core.domain.entity.SysDept;
 import com.ruoyi.common.core.domain.entity.SysMenu;
 import com.ruoyi.common.utils.StringUtils;
+import org.springframework.util.ObjectUtils;
 
 /**
  * Treeselect树结构实体类
@@ -56,6 +57,9 @@ public class TreeSelect implements Serializable
     {
         this.id = category.getId();
         this.label = category.getName();
+        if(ObjectUtils.isEmpty(category.getChildren())){
+            return;
+        }
         this.children = category.getChildren().stream().map(TreeSelect::new).collect(Collectors.toList());
     }
 

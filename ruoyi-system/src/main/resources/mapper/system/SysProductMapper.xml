@@ -19,12 +19,13 @@
         <result column="context" property="context"/>
         <result column="remark" property="remark"/>
         <result column="title" property="title"/>
+        <result column="category_id" property="categoryId"/>
     </resultMap>
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
         id, create_time, modify_time, version, deleted, creator_id, creator_username, modifier_id, modifier_username,
-        code, name, sort, context, remark ,title
+        code, name, sort, context, remark ,title,category_Id
     </sql>
 
     <!-- 根据ID查询 -->
@@ -84,6 +85,9 @@
         </if>
         <if test="name != null and name != ''">
             and name like concat('%', #{name}, '%')
+        </if>
+        <if test="categoryId != null and categoryId !=''">
+            and category_id = #{categoryId}
         </if>
         order by sort asc, create_time desc
     </select>

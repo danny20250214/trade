@@ -1,5 +1,6 @@
 package com.ruoyi.web.controller.system;
 
+import com.ruoyi.common.annotation.Anonymous;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
@@ -28,7 +29,8 @@ public class SysCategoryController extends BaseController {
     /**
      * 获取类别列表
      */
-    @PreAuthorize("@ss.hasPermi('system:category:list')")
+//    @PreAuthorize("@ss.hasPermi('system:category:list')")
+    @Anonymous
     @GetMapping("/list")
     public AjaxResult list(SysCategory category) {
         List<SysCategory> categories = categoryService.selectCategoryList(category);
@@ -58,6 +60,7 @@ public class SysCategoryController extends BaseController {
     /**
      * 获取类别下拉树列表
      */
+    @Anonymous
     @GetMapping("/treeselect")
     public AjaxResult treeselect(SysCategory category) {
         List<SysCategory> categories = categoryService.selectCategoryList(category);

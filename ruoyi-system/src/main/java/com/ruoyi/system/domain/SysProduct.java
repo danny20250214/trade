@@ -35,6 +35,9 @@ public class SysProduct extends BaseEntityNew {
     @Excel(name = "产品内容")
     private String context;
 
+    @Excel(name = "类别id")
+    private Long categoryId;
+
     @Excel(name = "产品备注")
     private String remark;
 
