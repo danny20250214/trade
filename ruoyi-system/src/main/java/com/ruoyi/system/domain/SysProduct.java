@@ -38,6 +38,9 @@ public class SysProduct extends BaseEntityNew {
     @Excel(name = "类别id")
     private Long categoryId;
 
+    @Excel(name = "产品介绍图片地址")
+    private String images;
+
     @Excel(name = "产品备注")
     private String remark;
 

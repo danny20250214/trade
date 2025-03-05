@@ -25,7 +25,7 @@
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
         id, create_time, modify_time, version, deleted, creator_id, creator_username, modifier_id, modifier_username,
-        code, name, sort, context, remark ,title,category_Id
+        code, name, sort, context, remark ,title,category_Id,images
     </sql>
 
     <!-- 根据ID查询 -->

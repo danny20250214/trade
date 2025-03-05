@@ -114,36 +114,55 @@
     />
 
     <!-- 添加或修改产品对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body class="product-dialog">
-      <div class="dialog-content">
-        <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-          <el-row>
-            <el-col :span="24" v-if="form.categoryId !== 0">
-              <el-form-item label="上级类别" prop="parentId">
-                <treeselect v-model="form.categoryId" :options="categoryOptions" :normalizer="normalizer" placeholder="选择上级类别" />
-              </el-form-item>
-            </el-col>
-          </el-row>
+    <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
+      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
+        <el-row>
+          <el-col :span="24" v-if="form.categoryId !== 0">
+            <el-form-item label="上级类别" prop="parentId">
+              <treeselect v-model="form.categoryId" :options="categoryOptions" :normalizer="normalizer" placeholder="选择上级类别" />
+            </el-form-item>
+          </el-col>
+        </el-row>
 
-          <el-form-item label="产品名称" required>
-            <el-input v-model="form.name" placeholder="请输入产品名称" />
-          </el-form-item>
-          <el-form-item label="产品编码" required>
-            <el-input v-model="form.code" placeholder="请输入产品编码"></el-input>
-          </el-form-item>
-          <el-form-item label="产品标题" required>
-            <el-input v-model="form.title" placeholder="请输入产品标题"></el-input>
-          </el-form-item>
-          <el-form-item label="产品排序">
-            <el-input-number v-model="form.sort" controls-position="right" :min="0" />
-          </el-form-item>
-          <el-form-item label="产品内容" required>
-            <quill-editor ref="myQuillEditor" v-model="form.context"
-                          :options="editorOptions"
-            ></quill-editor>
-          </el-form-item>
-        </el-form>
-      </div>
+        <el-form-item label="产品名称" required>
+          <el-input v-model="form.name" placeholder="请输入产品名称" />
+        </el-form-item>
+        <el-form-item label="产品编码" required>
+          <el-input v-model="form.code" placeholder="请输入产品编码"></el-input>
+        </el-form-item>
+        <el-form-item label="产品标题" required>
+          <el-input v-model="form.title" placeholder="请输入产品标题"></el-input>
+        </el-form-item>
+        <el-form-item label="产品排序">
+          <el-input-number v-model="form.sort" controls-position="right" :min="0" />
+        </el-form-item>
+        <!-- 图片上传部分 -->
+        <el-form-item label="产品图片" prop="images">
+          <el-upload
+            class="upload-demo"
+            action="/dev-api/common/upload"
+            :headers="headers"
+            list-type="picture-card"
+            :file-list="fileList"
+            :on-preview="handlePictureCardPreview"
+            :on-remove="handleRemove"
+            :on-success="handleUploadSuccess"
+            :before-upload="beforeUpload"
+            accept="image/*"
+            multiple>
+            <i class="el-icon-plus"></i>
+          </el-upload>
+          <!-- 图片预览对话框 -->
+          <el-dialog :visible.sync="dialogVisible" append-to-body>
+            <img width="100%" :src="dialogImageUrl" alt="">
+          </el-dialog>
+        </el-form-item>
+        <el-form-item label="产品内容" required>
+          <quill-editor ref="myQuillEditor" v-model="form.context"
+                        :options="editorOptions"
+          ></quill-editor>
+        </el-form-item>
+      </el-form>
 
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
@@ -171,6 +190,13 @@ export default {
   dicts: ['sys_normal_disable'],
   data() {
     return {
+      // 上传相关数据
+      fileList: [],
+      dialogImageUrl: '',
+      dialogVisible: false,
+      headers: {
+        Authorization: 'Bearer ' + getToken()
+      },
       // 重新渲染表格状态
       refreshTable: true,
       // 是否展开，默认全部展开
@@ -205,7 +231,8 @@ export default {
       // 表单参数
       form: {
         context: "",
-        categoryId: undefined
+        categoryId: undefined,
+        images: [], // 存储图片URL数组
       },
       editorOptions: {
         theme: "snow",
@@ -247,7 +274,10 @@ export default {
       // 表单校验
       rules: {
         categoryId: [
-          { required: true, message: "上级类别不能为空", trigger: "blur" }
+          { required: true, message: "上级类别不能为空", trigger: "blur" },
+        ],
+        images: [
+          { required: true, message: '请上传产品图片', trigger: 'change' }
         ],
         name: [
           { required: true, message: "产品名称不能为空", trigger: "blur" }
@@ -266,6 +296,63 @@ export default {
     this.getCategoryTree();
   },
   methods: {
+    // 上传前的验证
+    beforeUpload(file) {
+      const isImage = file.type.startsWith('image/');
+      const isLt2M = file.size / 1024 / 1024 < 2;
+
+      if (!isImage) {
+        this.$message.error('上传文件只能是图片格式!');
+        return false;
+      }
+      if (!isLt2M) {
+        this.$message.error('上传图片大小不能超过 2MB!');
+        return false;
+      }
+      return true;
+    },
+    // 修改上传成功的处理方法
+    handleUploadSuccess(response, file, fileList) {
+      if (response.code === 200) {
+        // 确保 form.images 是数组
+        if (!Array.isArray(this.form.images)) {
+          this.form.images = [];
+        }
+        this.form.images.push(response.url);
+        this.fileList = fileList; // 更新文件列表
+        this.$message.success('图片上传成功');
+      } else {
+        this.$message.error(response.msg || '上传失败');
+        // 从文件列表中移除上传失败的文件
+        const index = fileList.indexOf(file);
+        if (index > -1) {
+          fileList.splice(index, 1);
+        }
+      }
+    },
+
+
+  handleRemove(file, fileList) {
+    // 从 fileList 中移除文件
+    this.fileList = fileList;
+    
+    // 从 form.images 中移除对应的 URL
+    const fileUrl = file.response ? file.response.url : file.url;
+    const index = this.form.images.indexOf(fileUrl);
+    if (index > -1) {
+      this.form.images.splice(index, 1);
+  }
+  
+  // 打印检查
+  console.log('当前图片列表:', this.form.images);
+  console.log('当前文件列表:', this.fileList);
+},
+
+    // 预览图片
+    handlePictureCardPreview(file) {
+      this.dialogImageUrl = file.url;
+      this.dialogVisible = true;
+    },
     getCategoryTree() {
       this.loading = true;
       listCategory(undefined).then(response => {
@@ -307,8 +394,12 @@ export default {
         sort: 0,
         status: "0",
         remark: undefined,
-        categoryId: undefined
+        categoryId: undefined,
+        images: [], // 重置图片数组
       };
+      this.fileList = []; // 重置上传文件列表
+      this.dialogImageUrl = ''; // 重置预览图片
+      this.dialogVisible = false; // 重置预览对话框
       this.resetForm("form");
     },
     /** 搜索按钮操作 */
@@ -343,6 +434,15 @@ export default {
         this.form = response.data;
         this.open = true;
         this.title = "修改产品";
+        // 如果后端返回的图片是字符串，需要转换为数组
+        if (typeof this.form.images === 'string') {
+          this.form.images = this.form.images.split(',');
+        }
+        // 构建文件列表
+        this.fileList = this.form.images.map(url => ({
+          name: url.substring(url.lastIndexOf('/') + 1),
+          url: url
+        }));
       });
     },
     /** 提交按钮 */
@@ -350,7 +450,8 @@ export default {
       this.$refs["form"].validate(valid => {
         if (valid) {
           this.form.context = btoa(unescape(encodeURIComponent(this.form.context)));
-
+          // 将图片数组转换为字符串
+          this.form.images = this.form.images.join(',');
           if (this.form.id != undefined) {
             updateProduct(this.form).then(response => {
               this.$modal.msgSuccess("修改成功");
@@ -367,6 +468,8 @@ export default {
           }
           try {
             this.form.context = decodeURIComponent(escape(atob(this.form.context)));
+            // 还原图片数组
+            this.form.images = this.form.images.split(',');
           } catch (error) {
             console.error("Base64 解码失败", error);
           }
@@ -392,3 +495,48 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.app-container {
+  padding: 20px;
+}
+
+.upload-demo {
+  width: 100%;
+}
+
+.upload-demo .el-upload {
+  margin-right: 10px;
+}
+
+.upload-demo .el-upload-list--picture-card .el-upload-list__item {
+  width: 100px;
+  height: 100px;
+}
+
+.el-upload--picture-card {
+  width: 100px;
+  height: 100px;
+  line-height: 100px;
+}
+
+.el-upload-list--picture-card {
+  display: inline;
+  margin: 0;
+}
+
+.dialog-content {
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+}
+
+.product-dialog {
+  display: flex;
+  flex-direction: column;
+}
+
+.product-dialog .el-dialog__body {
+  flex: 1;
+  overflow: auto;
+}
+</style>
