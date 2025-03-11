@@ -29,6 +29,16 @@ public class RuoYiConfig
 
     /** 验证码类型 */
     private static String captchaType;
+    /** 图片地址域名 **/
+    private String picDomain;
+
+    public String getPicDomain() {
+        return picDomain;
+    }
+
+    public void setPicDomain(String picDomain) {
+        this.picDomain = picDomain;
+    }
 
     public String getName()
     {
