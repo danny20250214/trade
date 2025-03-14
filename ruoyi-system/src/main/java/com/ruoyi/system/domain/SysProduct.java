@@ -3,10 +3,13 @@ package com.ruoyi.system.domain;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.ruoyi.common.annotation.Excel;
 import com.ruoyi.common.core.domain.BaseEntityNew;
 import com.ruoyi.common.utils.bean.Query;
 import lombok.Data;
+
+import java.math.BigDecimal;
 
 /**
  * 产品信息表 (sys_product) 实体类
@@ -43,5 +46,11 @@ public class SysProduct extends BaseEntityNew {
 
     @Excel(name = "产品备注")
     private String remark;
+
+    @Excel(name = "产品价格")
+    private BigDecimal price;
+
+    @TableField(exist = false)
+    private BigDecimal showPrice;
 
 }

@@ -17,6 +17,27 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
+      <el-form-item label="价格范围" prop="price">
+        <el-input-number
+          v-model="queryParams.minPrice"
+          :precision="2"
+          :step="0.1"
+          :min="0"
+          size="small"
+          style="width: 120px"
+          placeholder="最小价格"
+        />
+        <span class="el-range-separator">-</span>
+        <el-input-number
+          v-model="queryParams.maxPrice"
+          :precision="2"
+          :step="0.1"
+          :min="0"
+          size="small"
+          style="width: 120px"
+          placeholder="最大价格"
+        />
+      </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
@@ -74,6 +95,11 @@
       <el-table-column label="产品编号" align="center" prop="id" />
       <el-table-column label="产品编码" align="center" prop="code" />
       <el-table-column label="产品名称" align="center" prop="name" />
+      <el-table-column label="产品价格" align="center" prop="price">
+        <template slot-scope="scope">
+          {{ scope.row.price ? '¥' + scope.row.price : '-' }}
+        </template>
+      </el-table-column>
       <el-table-column label="产品排序" align="center" prop="sort" />
       <el-table-column label="状态" align="center" prop="status">
         <template slot-scope="scope">
@@ -135,6 +161,16 @@
         </el-form-item>
         <el-form-item label="产品排序">
           <el-input-number v-model="form.sort" controls-position="right" :min="0" />
+        </el-form-item>
+        <el-form-item label="产品价格" prop="price">
+          <el-input-number 
+            v-model="form.price"
+            :precision="2"
+            :step="0.1"
+            :min="0"
+            controls-position="right"
+            placeholder="请输入产品价格"
+          />
         </el-form-item>
         <!-- 图片上传部分 -->
         <el-form-item label="产品图片" prop="images">
@@ -226,13 +262,22 @@ export default {
         pageNum: 1,
         pageSize: 10,
         code: undefined,
-        name: undefined
+        name: undefined,
+        minPrice: undefined,
+        maxPrice: undefined
       },
       // 表单参数
       form: {
+        id: undefined,
+        code: undefined,
+        name: undefined,
+        title: undefined,
+        sort: 0,
+        status: "0",
         context: "",
         categoryId: undefined,
-        images: [], // 存储图片URL数组
+        images: [],
+        price: undefined  // 添加价格字段
       },
       editorOptions: {
         theme: "snow",
@@ -285,8 +330,18 @@ export default {
         code: [
           { required: true, message: "产品编码不能为空", trigger: "blur" }
         ],
-        sort: [
-          { required: true, message: "产品顺序不能为空", trigger: "blur" }
+        price: [
+          { required: true, message: "产品价格不能为空", trigger: "blur" },
+          { 
+            validator: (rule, value, callback) => {
+              if (value < 0) {
+                callback(new Error('价格不能小于0'));
+              } else {
+                callback();
+              }
+            },
+            trigger: 'blur'
+          }
         ]
       }
     };
@@ -391,11 +446,13 @@ export default {
         id: undefined,
         code: undefined,
         name: undefined,
+        title: undefined,
         sort: 0,
         status: "0",
-        remark: undefined,
+        context: "",
         categoryId: undefined,
-        images: [], // 重置图片数组
+        images: [],
+        price: undefined  // 重置价格字段
       };
       this.fileList = []; // 重置上传文件列表
       this.dialogImageUrl = ''; // 重置预览图片
@@ -538,5 +595,18 @@ export default {
 .product-dialog .el-dialog__body {
   flex: 1;
   overflow: auto;
+}
+
+.el-range-separator {
+  padding: 0 5px;
+}
+
+.el-input-number.is-controls-right .el-input__inner {
+  padding-left: 5px;
+  padding-right: 30px;
+}
+
+.el-input-number {
+  width: 180px;
 }
 </style>

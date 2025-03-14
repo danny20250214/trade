@@ -1,19 +1,23 @@
 package com.ruoyi.web.controller.system;
 
+import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.ruoyi.common.annotation.Anonymous;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
+import com.ruoyi.common.core.domain.entity.SysDictData;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.system.domain.SysProduct;
+import com.ruoyi.system.service.ISysDictDataService;
 import com.ruoyi.system.service.ISysProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import java.math.BigDecimal;
 import java.util.Base64;
 import java.util.List;
 
@@ -27,6 +31,8 @@ import java.util.List;
 public class SysProductController  extends BaseController {
     @Autowired
     private ISysProductService productService;
+    @Autowired
+    private ISysDictDataService sysDictDataService;
 
 //    @PreAuthorize("@ss.hasPermi('system:post:list')")
     @Anonymous
@@ -34,7 +40,17 @@ public class SysProductController  extends BaseController {
     public TableDataInfo list(SysProduct product)
     {
         startPage();
+
         List<SysProduct> list = productService.selectProductList(product);
+        if(ObjectUtils.isNotEmpty(list)){
+            SysDictData sysDictData = new SysDictData();
+            sysDictData.setDictType("sys_price_ratio");
+            List<SysDictData> sysDictDatas = sysDictDataService.selectDictDataList(sysDictData);
+            if(ObjectUtils.isNotEmpty(sysDictDatas)){
+                list.stream().filter(e -> ObjectUtils.isNotEmpty(e.getPrice()))
+                        .forEach(e -> e.setShowPrice(e.getPrice().multiply(new BigDecimal(sysDictDatas.get(0).getDictValue()))));
+            }
+        }
         return getDataTable(list);
     }
 
