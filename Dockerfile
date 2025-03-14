@@ -8,4 +8,4 @@ WORKDIR /app
 COPY ruoyi-admin/target/*.jar app.jar
 
 # 运行 Java 应用
-CMD ["java", "-jar", "app.jar"] 
+CMD ["java", "-jar", "app.jar"]  
