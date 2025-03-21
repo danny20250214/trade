@@ -15,9 +15,12 @@ services:
     networks:
       - backend
     volumes:
-      - ./backup:/backup
-      - ./entrypoint.sh:/docker-entrypoint-initdb.d/entrypoint.sh
-    command: [ "/bin/bash", "/docker-entrypoint-initdb.d/entrypoint.sh" ]
+      - /backup:/backup  # 将备份文件挂载到容器内的 /backup
+    command: >
+      bash -c "docker-entrypoint.sh mysqld &
+               sleep 30 &&
+               mysql -uroot -proot < /backup/mysql_backup.sql &&
+               wait"
 
   redis:
     image: anolis-registry.cn-zhangjiakou.cr.aliyuncs.com/openanolis/redis:5.0.3-8.6
