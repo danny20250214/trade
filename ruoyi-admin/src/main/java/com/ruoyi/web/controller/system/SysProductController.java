@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
 
@@ -73,20 +75,36 @@ public class SysProductController  extends BaseController {
 
     @PreAuthorize("@ss.hasPermi('system:product:add')")
     @Log(title = "产品管理", businessType = BusinessType.INSERT)
-    @PostMapping( consumes = "application/json", produces = "application/json")
+    @PostMapping(consumes = "application/json", produces = "application/json")
     public AjaxResult add(@RequestBody SysProduct product) {
-        String decodedContext = new String(Base64.getDecoder().decode(product.getContext()));
-        product.setContext(decodedContext);
-        return toAjax(productService.insertProduct(product));
+        try {
+            // Base64 解码，并使用 URLDecoder 处理中文
+            String decodedContext = URLDecoder.decode(
+                new String(Base64.getDecoder().decode(product.getContext())), 
+                StandardCharsets.UTF_8.name()
+            );
+            product.setContext(decodedContext);
+            return toAjax(productService.insertProduct(product));
+        } catch (Exception e) {
+            return AjaxResult.error("内容解码失败：" + e.getMessage());
+        }
     }
 
     @PreAuthorize("@ss.hasPermi('system:product:edit')")
     @Log(title = "产品管理", businessType = BusinessType.UPDATE)
     @PutMapping
     public AjaxResult edit(@RequestBody SysProduct product) {
-        String decodedContext = new String(Base64.getDecoder().decode(product.getContext()));
-        product.setContext(decodedContext);
-        return toAjax(productService.updateProduct(product));
+        try {
+            // Base64 解码，并使用 URLDecoder 处理中文
+            String decodedContext = URLDecoder.decode(
+                new String(Base64.getDecoder().decode(product.getContext())), 
+                StandardCharsets.UTF_8.name()
+            );
+            product.setContext(decodedContext);
+            return toAjax(productService.updateProduct(product));
+        } catch (Exception e) {
+            return AjaxResult.error("内容解码失败：" + e.getMessage());
+        }
     }
 
     @PreAuthorize("@ss.hasPermi('system:product:remove')")

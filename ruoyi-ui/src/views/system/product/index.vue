@@ -163,7 +163,7 @@
           <el-input-number v-model="form.sort" controls-position="right" :min="0" />
         </el-form-item>
         <el-form-item label="产品价格" prop="price">
-          <el-input-number 
+          <el-input-number
             v-model="form.price"
             :precision="2"
             :step="0.1"
@@ -276,8 +276,8 @@ export default {
         status: "0",
         context: "",
         categoryId: undefined,
-        images: [],
-        price: undefined  // 添加价格字段
+        images: "",
+        price: undefined
       },
       editorOptions: {
         theme: "snow",
@@ -332,7 +332,7 @@ export default {
         ],
         price: [
           { required: true, message: "产品价格不能为空", trigger: "blur" },
-          { 
+          {
             validator: (rule, value, callback) => {
               if (value < 0) {
                 callback(new Error('价格不能小于0'));
@@ -366,15 +366,16 @@ export default {
       }
       return true;
     },
-    // 修改上传成功的处理方法
+    // 上传成功的回调
     handleUploadSuccess(response, file, fileList) {
       if (response.code === 200) {
-        // 确保 form.images 是数组
-        if (!Array.isArray(this.form.images)) {
-          this.form.images = [];
-        }
-        this.form.images.push(response.url);
-        this.fileList = fileList; // 更新文件列表
+        // 将新的图片URL添加到已有的图片字符串中
+        let imageUrls = this.form.images ? this.form.images.split(',') : [];
+        imageUrls.push(response.url);
+        this.form.images = imageUrls.join(',');
+
+        // 更新文件列表显示
+        this.fileList = fileList;
         this.$message.success('图片上传成功');
       } else {
         this.$message.error(response.msg || '上传失败');
@@ -386,22 +387,18 @@ export default {
       }
     },
 
-
-  handleRemove(file, fileList) {
-    // 从 fileList 中移除文件
-    this.fileList = fileList;
-    
-    // 从 form.images 中移除对应的 URL
-    const fileUrl = file.response ? file.response.url : file.url;
-    const index = this.form.images.indexOf(fileUrl);
-    if (index > -1) {
-      this.form.images.splice(index, 1);
-  }
-  
-  // 打印检查
-  console.log('当前图片列表:', this.form.images);
-  console.log('当前文件列表:', this.fileList);
-},
+    // 移除图片
+    handleRemove(file, fileList) {
+      // 从图片字符串中移除对应的URL
+      let imageUrls = this.form.images.split(',');
+      const index = imageUrls.indexOf(file.url || file.response.url);
+      if (index > -1) {
+        imageUrls.splice(index, 1);
+        this.form.images = imageUrls.join(',');
+      }
+      // 更新文件列表
+      this.fileList = fileList;
+    },
 
     // 预览图片
     handlePictureCardPreview(file) {
@@ -451,12 +448,12 @@ export default {
         status: "0",
         context: "",
         categoryId: undefined,
-        images: [],
-        price: undefined  // 重置价格字段
+        images: "",
+        price: undefined
       };
-      this.fileList = []; // 重置上传文件列表
-      this.dialogImageUrl = ''; // 重置预览图片
-      this.dialogVisible = false; // 重置预览对话框
+      this.fileList = [];
+      this.dialogImageUrl = '';
+      this.dialogVisible = false;
       this.resetForm("form");
     },
     /** 搜索按钮操作 */
@@ -486,49 +483,58 @@ export default {
     /** 修改按钮操作 */
     handleUpdate(row) {
       this.reset();
-      const id = row.id || this.ids
+      const id = row.id || this.ids;
       getProduct(id).then(response => {
         this.form = response.data;
+        // 如果有富文本内容，进行解码
+        if (this.form.context) {
+          try {
+            this.form.context = decodeURIComponent(atob(this.form.context));
+          } catch (error) {
+            console.error("内容解码失败", error);
+            this.$modal.msgError("内容解码失败");
+          }
+        }
+        // 处理图片列表
+        if (this.form.images) {
+          const imageUrls = this.form.images.split(',');
+          this.fileList = imageUrls.map(url => ({
+            name: url.substring(url.lastIndexOf('/') + 1),
+            url: url
+          }));
+        }
         this.open = true;
         this.title = "修改产品";
-        // 如果后端返回的图片是字符串，需要转换为数组
-        if (typeof this.form.images === 'string') {
-          this.form.images = this.form.images.split(',');
-        }
-        // 构建文件列表
-        this.fileList = this.form.images.map(url => ({
-          name: url.substring(url.lastIndexOf('/') + 1),
-          url: url
-        }));
       });
     },
     /** 提交按钮 */
-    submitForm: function() {
+    submitForm() {
       this.$refs["form"].validate(valid => {
         if (valid) {
-          this.form.context = btoa(unescape(encodeURIComponent(this.form.context)));
-          // 将图片数组转换为字符串
-          this.form.images = this.form.images.join(',');
-          if (this.form.id != undefined) {
-            updateProduct(this.form).then(response => {
+          const submitData = { ...this.form };
+          // 提交前编码富文本内容
+          if (submitData.context) {
+            try {
+              submitData.context = btoa(encodeURIComponent(submitData.context));
+            } catch (error) {
+              console.error("内容编码失败", error);
+              this.$modal.msgError("内容编码失败");
+              return;
+            }
+          }
+
+          if (submitData.id != undefined) {
+            updateProduct(submitData).then(response => {
               this.$modal.msgSuccess("修改成功");
               this.open = false;
               this.getList();
             });
-
           } else {
-            addProduct(this.form).then(response => {
+            addProduct(submitData).then(response => {
               this.$modal.msgSuccess("新增成功");
               this.open = false;
               this.getList();
             });
-          }
-          try {
-            this.form.context = decodeURIComponent(escape(atob(this.form.context)));
-            // 还原图片数组
-            this.form.images = this.form.images.split(',');
-          } catch (error) {
-            console.error("Base64 解码失败", error);
           }
         }
       });
