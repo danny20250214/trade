@@ -227,12 +227,14 @@ import data from "@/views/system/dict/data";
 import {listCategory} from "@/api/system/category";
 import Treeselect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
+import { upload } from "@/api/common";  // 确保这行引入正确
 
 export default {
   components: { quillEditor,Treeselect},
   name: "Product",
   dicts: ['sys_normal_disable'],
   data() {
+    const that = this; // 保存 vue 实例引用
     return {
       // 上传相关数据
       fileList: [],
@@ -292,67 +294,41 @@ export default {
         modules: {
           toolbar: {
             container: [
-              ['bold', 'italic', 'underline', 'strike'],    // 加粗，斜体，下划线，删除线
-              ['blockquote', 'code-block'],                 // 引用，代码块
-              [{ 'header': 1 }, { 'header': 2 }],          // 标题，键值对的形式；1、2表示字体大小
-              [{ 'list': 'ordered'}, { 'list': 'bullet' }], // 列表
-              [{ 'script': 'sub'}, { 'script': 'super' }],  // 上下标
-              [{ 'indent': '-1'}, { 'indent': '+1' }],      // 缩进
-              [{ 'direction': 'rtl' }],                     // 文本方向
-              [{ 'size': ['small', false, 'large', 'huge'] }], // 字体大小
-              [{ 'header': [1, 2, 3, 4, 5, 6, false] }],    // 标题
-              [{ 'color': [] }, { 'background': [] }],      // 字体颜色，字体背景颜色
-              [{ 'font': [] }],                             // 字体
-              [{ 'align': [] }],                            // 对齐方式
-              ['clean'],                                     // 清除字体样式
-              ['link', 'image', 'video']                    // 链接、图片、视频
+              ['bold', 'italic', 'underline', 'strike'],
+              ['blockquote', 'code-block'],
+              [{ 'header': 1 }, { 'header': 2 }],
+              [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+              [{ 'script': 'sub'}, { 'script': 'super' }],
+              [{ 'indent': '-1'}, { 'indent': '+1' }],
+              [{ 'direction': 'rtl' }],
+              [{ 'size': ['small', false, 'large', 'huge'] }],
+              [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+              [{ 'color': [] }, { 'background': [] }],
+              [{ 'font': [] }],
+              [{ 'align': [] }],
+              ['clean'],
+              ['link', 'image', 'video']
             ],
             handlers: {
-              image: () => {
-                let fileInput = document.createElement('input');
-                fileInput.setAttribute('type', 'file');
-                fileInput.setAttribute('accept', 'image/*');
-                fileInput.click();
-
-                fileInput.onchange = async () => {
-                  let file = fileInput.files[0];
-                  if (file) {
-                    let formData = new FormData();
-                    formData.append('file', file);
-
-                    try {
-                      let res = await axios.post('/dev-api/common/upload', formData, {
-                        headers: {
-                          'Content-Type': 'multipart/form-data',
-                          'Authorization': 'Bearer ' + getToken()
-                        }
-                      });
-
-                      if (res.data.code === 200) {
-                        let imageUrl = res.data.url;
-                        let quill = this.$refs.myQuillEditor.quill;
-                        let range = quill.getSelection();
-                        quill.insertEmbed(range.index, 'image', imageUrl);
-                      } else {
-                        this.$message.error(res.data.msg || '上传失败');
-                      }
-                    } catch (error) {
-                      console.error('上传失败', error);
-                      this.$message.error('图片上传失败');
-                    }
-                  }
+              image: function() {
+                const input = document.createElement('input');
+                input.setAttribute('type', 'file');
+                input.setAttribute('accept', 'image/*');
+                input.click();
+                
+                input.onchange = () => {
+                  const file = input.files[0];
+                  const formData = new FormData();
+                  formData.append('file', file);
+                  
+                  // 使用保存的 vue 实例引用
+                  that.uploadImage(formData, this.quill);
                 };
               }
             }
-          },
-          syntax: true,      // 启用代码语法高亮
-          imageDrop: true,   // 启用图片拖拽
-          imageResize: {     // 启用图片调整大小
-            displaySize: true
           }
         },
-        placeholder: '请输入产品内容...',
-        readOnly: false
+        placeholder: '请输入产品内容...'
       },
       // 表单校验
       rules: {
@@ -602,7 +578,7 @@ export default {
     },
     // 编辑器就绪
     onEditorReady(editor) {
-      console.log('编辑器就绪', editor);
+      this.quill = editor;
     },
     // 编辑器获得焦点
     onEditorFocus(editor) {
@@ -615,6 +591,31 @@ export default {
     // 编辑器内容改变
     onEditorChange({ editor, html, text }) {
       console.log('编辑器内容改变:', html);
+    },
+    // 新增上传图片方法
+    uploadImage(formData, quill) {
+      const loading = this.$loading({
+        lock: true,
+        text: '图片上传中...',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)'
+      });
+
+      upload(formData).then(response => {
+        loading.close();
+        if (response.code === 200) {
+          const range = quill.getSelection(true);
+          quill.insertEmbed(range.index, 'image', response.url);
+          quill.setSelection(range.index + 1);
+          this.$modal.msgSuccess("图片上传成功");
+        } else {
+          this.$modal.msgError(response.msg || "图片上传失败");
+        }
+      }).catch(error => {
+        loading.close();
+        console.error('上传失败:', error);
+        this.$modal.msgError("图片上传失败");
+      });
     },
   }
 };
