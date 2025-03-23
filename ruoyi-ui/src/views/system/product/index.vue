@@ -193,10 +193,16 @@
             <img width="100%" :src="dialogImageUrl" alt="">
           </el-dialog>
         </el-form-item>
-        <el-form-item label="产品内容" required>
-          <quill-editor ref="myQuillEditor" v-model="form.context"
-                        :options="editorOptions"
-          ></quill-editor>
+        <el-form-item label="产品内容" prop="context">
+          <quill-editor
+            ref="myQuillEditor"
+            v-model="form.context"
+            :options="editorOptions"
+            @ready="onEditorReady"
+            @focus="onEditorFocus"
+            @blur="onEditorBlur"
+            @change="onEditorChange"
+          />
         </el-form-item>
       </el-form>
 
@@ -211,7 +217,9 @@
 <script>
 import { listProduct, getProduct, delProduct, addProduct, updateProduct } from "@/api/system/product";
 import { quillEditor } from "vue-quill-editor";
-import "quill/dist/quill.snow.css"; // Quill 样式
+import "quill/dist/quill.core.css";
+import "quill/dist/quill.snow.css";
+import "quill/dist/quill.bubble.css";
 import { Message } from "element-ui";
 import axios from "axios";
 import {getToken} from "@/utils/auth";
@@ -280,42 +288,72 @@ export default {
         price: undefined
       },
       editorOptions: {
-        theme: "snow",
+        theme: 'snow',
         modules: {
           toolbar: {
-            container: [["bold", "italic", "underline"], ["image"]],
+            container: [
+              ['bold', 'italic', 'underline', 'strike'],    // 加粗，斜体，下划线，删除线
+              ['blockquote', 'code-block'],                 // 引用，代码块
+              [{ 'header': 1 }, { 'header': 2 }],          // 标题，键值对的形式；1、2表示字体大小
+              [{ 'list': 'ordered'}, { 'list': 'bullet' }], // 列表
+              [{ 'script': 'sub'}, { 'script': 'super' }],  // 上下标
+              [{ 'indent': '-1'}, { 'indent': '+1' }],      // 缩进
+              [{ 'direction': 'rtl' }],                     // 文本方向
+              [{ 'size': ['small', false, 'large', 'huge'] }], // 字体大小
+              [{ 'header': [1, 2, 3, 4, 5, 6, false] }],    // 标题
+              [{ 'color': [] }, { 'background': [] }],      // 字体颜色，字体背景颜色
+              [{ 'font': [] }],                             // 字体
+              [{ 'align': [] }],                            // 对齐方式
+              ['clean'],                                     // 清除字体样式
+              ['link', 'image', 'video']                    // 链接、图片、视频
+            ],
             handlers: {
-              image: () =>  {
-                let fileInput = document.createElement("input");
-                fileInput.setAttribute("type", "file");
-                fileInput.setAttribute("accept", "image/*");
+              image: () => {
+                let fileInput = document.createElement('input');
+                fileInput.setAttribute('type', 'file');
+                fileInput.setAttribute('accept', 'image/*');
                 fileInput.click();
 
                 fileInput.onchange = async () => {
                   let file = fileInput.files[0];
                   if (file) {
                     let formData = new FormData();
-                    formData.append("file", file);
+                    formData.append('file', file);
 
-                    // 发送到后端
                     try {
-                      let res = await axios.post("/dev-api/common/upload", formData, {
-                        headers: { "Content-Type": "multipart/form-data" ,"Authorization":'Bearer ' + getToken()}
+                      let res = await axios.post('/dev-api/common/upload', formData, {
+                        headers: {
+                          'Content-Type': 'multipart/form-data',
+                          'Authorization': 'Bearer ' + getToken()
+                        }
                       });
 
-                      let imageUrl = res.data.url;
-                      let quill = this.$refs.myQuillEditor.quill;
-                      // 获取编辑器实例，并插入图片
-                      let range = quill.getSelection();
-                      quill.insertEmbed(range.index, "image", imageUrl);
+                      if (res.data.code === 200) {
+                        let imageUrl = res.data.url;
+                        let quill = this.$refs.myQuillEditor.quill;
+                        let range = quill.getSelection();
+                        quill.insertEmbed(range.index, 'image', imageUrl);
+                      } else {
+                        this.$message.error(res.data.msg || '上传失败');
+                      }
                     } catch (error) {
-                      console.error("上传失败", error);
+                      console.error('上传失败', error);
+                      this.$message.error('图片上传失败');
                     }
                   }
                 };
               }
-            }}}
+            }
           },
+          syntax: true,      // 启用代码语法高亮
+          imageDrop: true,   // 启用图片拖拽
+          imageResize: {     // 启用图片调整大小
+            displaySize: true
+          }
+        },
+        placeholder: '请输入产品内容...',
+        readOnly: false
+      },
       // 表单校验
       rules: {
         categoryId: [
@@ -349,6 +387,13 @@ export default {
   created() {
     this.getList();
     this.getCategoryTree();
+  },
+  mounted() {
+    // 设置编辑器默认字体大小
+    if (this.$refs.myQuillEditor) {
+      const quill = this.$refs.myQuillEditor.quill;
+      quill.format('size', 'normal');
+    }
   },
   methods: {
     // 上传前的验证
@@ -554,7 +599,23 @@ export default {
       this.download('system/product/export', {
         ...this.queryParams
       }, `product_${new Date().getTime()}.xlsx`)
-    }
+    },
+    // 编辑器就绪
+    onEditorReady(editor) {
+      console.log('编辑器就绪', editor);
+    },
+    // 编辑器获得焦点
+    onEditorFocus(editor) {
+      console.log('编辑器获得焦点', editor);
+    },
+    // 编辑器失去焦点
+    onEditorBlur(editor) {
+      console.log('编辑器失去焦点', editor);
+    },
+    // 编辑器内容改变
+    onEditorChange({ editor, html, text }) {
+      console.log('编辑器内容改变:', html);
+    },
   }
 };
 </script>
