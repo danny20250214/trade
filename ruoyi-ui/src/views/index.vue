@@ -81,13 +81,13 @@
             <span>联系信息</span>
           </div>
           <div class="body">
-            <p>
+<!--            <p>
               <i class="el-icon-s-promotion"></i> 官网：<el-link
                 href="http://www.ruoyi.vip"
                 target="_blank"
                 >http://www.ruoyi.vip</el-link
               >
-            </p>
+            </p>-->
 <!--            <p>
               <i class="el-icon-user-solid"></i> QQ群：<s> 满937441 </s> <s> 满887144332 </s>
               <s> 满180251782 </s> <s> 满104180207 </s> <s> 满186866453 </s> <s> 满201396349 </s>
@@ -1004,23 +1004,23 @@
           </el-collapse>
         </el-card>-->
       </el-col>
-      <el-col :xs="24" :sm="24" :md="12" :lg="8">
+<!--      <el-col :xs="24" :sm="24" :md="12" :lg="8">
         <el-card class="update-log">
           <div slot="header" class="clearfix">
             <span>捐赠支持</span>
           </div>
           <div class="body">
-            <img
+&lt;!&ndash;            <img
               src="@/assets/images/pay.png"
               alt="donate"
               width="100%"
-            />
-            <span style="display: inline-block; height: 30px; line-height: 30px"
+            />&ndash;&gt;
+&lt;!&ndash;            <span style="display: inline-block; height: 30px; line-height: 30px"
               >你可以请作者喝杯咖啡表示鼓励</span
-            >
+            >&ndash;&gt;
           </div>
         </el-card>
-      </el-col>
+      </el-col>-->
     </el-row>
   </div>
 </template>
